@@ -4,7 +4,6 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Validate env
 if (!process.env.JWT_SECRET) {
     console.error('FATAL ERROR: JWT_SECRET is not defined.');
     process.exit(1);
@@ -21,21 +20,21 @@ const app = express();
    🔥 MANUAL CORS (RAILWAY SAFE)
    =============================== */
 app.use((req, res, next) => {
-    res.header(
+    res.setHeader(
         "Access-Control-Allow-Origin",
         "https://dodeck-ivory.vercel.app"
     );
-    res.header(
+    res.setHeader(
         "Access-Control-Allow-Methods",
         "GET,POST,PUT,DELETE,OPTIONS"
     );
-    res.header(
+    res.setHeader(
         "Access-Control-Allow-Headers",
         "Content-Type, Authorization"
     );
 
     if (req.method === "OPTIONS") {
-        return res.sendStatus(204);
+        return res.status(200).end();
     }
 
     next();

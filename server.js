@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// Check for required environment variables
+// 🔴 Validate required environment variables (fail fast)
 if (!process.env.JWT_SECRET) {
     console.error('FATAL ERROR: JWT_SECRET is not defined.');
     process.exit(1);
@@ -18,21 +18,42 @@ if (!process.env.MONGO_URI) {
 
 const app = express();
 
-app.use(cors());
+/* ===============================
+   ✅ CORS CONFIG (PRODUCTION SAFE)
+   =============================== */
+const corsOptions = {
+    origin: [
+        'https://dodeck-ivory.vercel.app', // production frontend
+        'http://localhost:5173'            // local dev (optional)
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+};
+
+// 🔥 MUST be before routes
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 
+/* ===============================
+   ROUTES
+   =============================== */
 app.get('/', (req, res) => {
     res.send('DoDeck Backend is working!');
 });
 
-// Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tasks', require('./routes/tasks'));
 
-// DB Connect
+/* ===============================
+   DB + SERVER START
+   =============================== */
 const PORT = process.env.PORT || 3000;
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose
+    .connect(process.env.MONGO_URI)
     .then(() => {
         console.log('MongoDB Connected!');
         app.listen(PORT, () => {

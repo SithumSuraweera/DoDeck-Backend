@@ -30,11 +30,16 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tasks', require('./routes/tasks'));
 
 // DB Connect
+const PORT = process.env.PORT || 3000;
+
 mongoose.connect(process.env.MONGO_URI)
     .then(() => {
         console.log('MongoDB Connected!');
-        app.listen(process.env.PORT, () =>
-            console.log(`Server running on http://localhost:${process.env.PORT}`)
-        );
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
     })
-    .catch(err => console.error(err));
+    .catch(err => {
+        console.error('MongoDB connection error:', err.message);
+        process.exit(1);
+    });

@@ -1,11 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-// 🔴 Validate required environment variables (fail fast)
+// Validate env
 if (!process.env.JWT_SECRET) {
     console.error('FATAL ERROR: JWT_SECRET is not defined.');
     process.exit(1);
@@ -19,21 +18,28 @@ if (!process.env.MONGO_URI) {
 const app = express();
 
 /* ===============================
-   ✅ CORS CONFIG (PRODUCTION SAFE)
+   🔥 MANUAL CORS (RAILWAY SAFE)
    =============================== */
-const corsOptions = {
-    origin: [
-        'https://dodeck-ivory.vercel.app', // production frontend
-        'http://localhost:5173'            // local dev (optional)
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-};
+app.use((req, res, next) => {
+    res.header(
+        "Access-Control-Allow-Origin",
+        "https://dodeck-ivory.vercel.app"
+    );
+    res.header(
+        "Access-Control-Allow-Methods",
+        "GET,POST,PUT,DELETE,OPTIONS"
+    );
+    res.header(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization"
+    );
 
-// 🔥 MUST be before routes
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+
+    next();
+});
 
 app.use(express.json());
 
@@ -48,7 +54,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/tasks', require('./routes/tasks'));
 
 /* ===============================
-   DB + SERVER START
+   DB + SERVER
    =============================== */
 const PORT = process.env.PORT || 3000;
 
